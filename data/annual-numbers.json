@@ -1,0 +1,27 @@
+{
+  "year": 2026,
+  "verified": "2026-06-09",
+  "reviewCadence": "Update every January when SSA publishes COLA figures. Sources: ssa.gov/oact/cola/sga.html, ssa.gov/redbook, ssa.gov/representation.",
+  "figures": {
+    "sga_nonblind_monthly": 1690,
+    "sga_blind_monthly": 2830,
+    "trial_work_period_monthly": 1210,
+    "ssi_fbr_individual_monthly": 994,
+    "ssi_fbr_couple_monthly": 1491,
+    "ssi_resource_limit_individual": 2000,
+    "ssi_resource_limit_couple": 3000,
+    "earnings_per_work_credit": 1890,
+    "max_credits_per_year": 4,
+    "earnings_to_max_credits": 7560,
+    "representative_fee_cap": 9200,
+    "average_ssdi_benefit_monthly": 1580
+  },
+  "displayStrings": {
+    "sga_nonblind": "$1,690/month",
+    "sga_blind": "$2,830/month",
+    "ssi_fbr_individual": "$994/month",
+    "ssi_resource_individual": "$2,000",
+    "ssi_resource_couple": "$3,000",
+    "fee_cap": "$9,200"
+  }
+}

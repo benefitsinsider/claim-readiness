@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disability Claim Readiness Score — A Free Self-Screen | Benefits Insider</title>
+<meta name="description" content="A free 4-minute self-screen that scores how prepared your disability claim is today — your evidence, your work-limit story, and the eligibility gates — before you file or hire help. Educational only; not affiliated with the Social Security Administration.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,500&family=Montserrat:wght@600;700;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/brand.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="./">Benefits Insider<span class="tm">™</span></a>
+    <span class="muted" style="color:var(--gold-light);font-size:12.5px;letter-spacing:0.06em;">FREE · NO ACCOUNT</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ LANDING ============ -->
+  <section id="view-landing" class="view active">
+    <div class="hero">
+      <div class="eyebrow">A Free Educational Self-Screen</div>
+      <h1>Where Does Your Disability Claim Stand Today?</h1>
+      <p class="chapter-sub">Your Claim Readiness Score, in about 4 minutes.</p>
+      <p class="lead">Most applicants spend a year finding out whether their case was ready. This self-screen scores how prepared you are <em>before</em> you spend that year — your evidence, your work-limit story, and the basic eligibility gates.</p>
+    </div>
+
+    <ul class="feature-list">
+      <li>A 100-point Readiness Score across the seven areas SSA's process actually examines</li>
+      <li>The four bright-line gates that override everything else — checked honestly</li>
+      <li>What appears organized, what appears incomplete, and what may deserve attention first</li>
+    </ul>
+
+    <div class="callout">
+      <div class="callout-title">Your answers stay on your device</div>
+      <p style="margin:0;">This screen runs entirely in your browser. Your answers are never sent to us or anyone else.</p>
+    </div>
+
+    <button class="btn btn-primary" id="btn-start" type="button">Start My Free Self-Screen</button>
+    <p class="muted" style="text-align:center;margin-top:10px;">28 questions · about 4 minutes · free</p>
+
+    <div class="nav-disclaimer">
+      <strong>Before you begin.</strong> This score is an educational self-screen. It is not legal advice, not a disability determination, and not a recommendation to file or not file. Only the Social Security Administration can decide a disability claim. Benefits Insider does not represent you before SSA and has not reviewed your records.
+    </div>
+  </section>
+
+  <!-- ============ QUIZ ============ -->
+  <section id="view-quiz" class="view" aria-live="polite">
+    <div class="progress-meta" id="progress-meta"></div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+    <div id="quiz-body"></div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section id="view-results" class="view">
+    <div id="results-body"></div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="inner">
+    <p><strong>Benefits Insider is not affiliated with or endorsed by the Social Security Administration or any government agency.</strong></p>
+    <p>This tool is an educational self-screen for your own organization and understanding. It is not legal, financial, or tax advice; it is not a disability determination; and it does not predict any decision. Applying for disability benefits is free at ssa.gov, by phone at 1-800-772-1213, or at your local office. Your quiz answers are processed on your device and never transmitted.</p>
+    <p id="figures-stamp"></p>
+  </div>
+</footer>
+
+<script src="js/engine.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
