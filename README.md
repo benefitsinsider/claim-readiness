@@ -66,9 +66,7 @@ infrastructure.
 
 One-time setup:
 1. Netlify → Site settings → Environment variables: `BEEHIIV_API_KEY`, `BEEHIIV_PUB_ID`.
-2. beehiiv → Settings → Subscriber data: create custom fields `first_name`, `phone`, `sms_consent`,
-   `readiness_score`, `readiness_tier`, `sections_summary`, `gates_closed`, `consent_at`,
-   `consent_ip`, `consent_form_version`.
+2. beehiiv → Settings → Subscriber data: create custom fields `First Name`, `Phone Number`, `SMS Consent`, `Readiness Score`, `Readiness Tier`, `Sections Summary`, `Gates Closed`, `Consent At`, `Consent IP`, `Consent Form Version`.
 3. beehiiv → Automations: signup trigger with `utm_source = mydisabilitycheck` sending the report
    email — full copy in `docs/report-email-template.md`.
 4. Have a lawyer review `privacy.html` and the capture-form disclosure text before paid traffic.

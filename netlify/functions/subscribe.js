@@ -7,10 +7,11 @@
  *   BEEHIIV_API_KEY  — beehiiv Settings → Integrations → API
  *   BEEHIIV_PUB_ID   — the publication id (starts with "pub_")
  *
- * The custom fields below must exist in beehiiv (Settings → Subscriber data)
- * before they will populate: first_name, phone, sms_consent, readiness_score,
- * readiness_tier, sections_summary, gates_closed, consent_at, consent_ip,
- * consent_form_version.
+ * The custom fields below must exist in beehiiv (Settings → Custom fields),
+ * named exactly (Title Case, matching beehiiv's defaults): First Name,
+ * Phone Number, SMS Consent, Readiness Score, Readiness Tier,
+ * Sections Summary, Gates Closed, Consent At, Consent IP,
+ * Consent Form Version.
  */
 
 exports.handler = async function (event) {
@@ -42,16 +43,16 @@ exports.handler = async function (event) {
     utm_source: "mydisabilitycheck",
     utm_medium: "readiness-quiz",
     custom_fields: [
-      { name: "first_name", value: clip(body.name, 60) },
-      { name: "phone", value: clip(body.phone, 25) },
-      { name: "sms_consent", value: body.smsConsent ? "yes" : "no" },
-      { name: "readiness_score", value: clip(body.score, 5) },
-      { name: "readiness_tier", value: clip(body.tierName, 40) },
-      { name: "sections_summary", value: clip(sections, 250) },
-      { name: "gates_closed", value: clip(body.gatesClosed, 100) },
-      { name: "consent_at", value: clip(body.consentAt, 30) },
-      { name: "consent_ip", value: clip(event.headers["x-nf-client-connection-ip"], 45) },
-      { name: "consent_form_version", value: clip(body.formVersion, 20) }
+      { name: "First Name", value: clip(body.name, 60) },
+      { name: "Phone Number", value: clip(body.phone, 25) },
+      { name: "SMS Consent", value: body.smsConsent ? "yes" : "no" },
+      { name: "Readiness Score", value: clip(body.score, 5) },
+      { name: "Readiness Tier", value: clip(body.tierName, 40) },
+      { name: "Sections Summary", value: clip(sections, 250) },
+      { name: "Gates Closed", value: clip(body.gatesClosed, 100) },
+      { name: "Consent At", value: clip(body.consentAt, 30) },
+      { name: "Consent IP", value: clip(event.headers["x-nf-client-connection-ip"], 45) },
+      { name: "Consent Form Version", value: clip(body.formVersion, 20) }
     ]
   };
 

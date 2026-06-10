@@ -3,27 +3,28 @@
 Set up in beehiiv: **Automations → New automation → Trigger: Signup** with condition
 `utm_source = mydisabilitycheck`. One email, sent immediately. Sender: "Kwame from
 Benefits Insider". The merge tags below are the custom fields the Netlify function
-populates — create them first under **Settings → Subscriber data**: `first_name`,
-`phone`, `sms_consent`, `readiness_score`, `readiness_tier`, `sections_summary`,
-`gates_closed`, `consent_at`, `consent_ip`, `consent_form_version`.
+populates — they exist under **Settings → Custom fields**: First Name, Phone Number,
+SMS Consent, Readiness Score, Readiness Tier, Sections Summary, Gates Closed,
+Consent At, Consent IP, Consent Form Version. Insert them in the email via
+beehiiv's personalization menu (the {{ }} names below are placeholders for those).
 
-**Subject:** Your Claim Readiness Report: {{readiness_score}}/100
-**Alt A:** {{first_name}}, your Readiness Score is {{readiness_score}} — here's what it means
-**Alt B:** Your disability claim readiness: {{readiness_tier}}
-**Alt C:** The report you requested — {{readiness_score}}/100, {{readiness_tier}}
+**Subject:** Your Claim Readiness Report: {{Readiness Score}}/100
+**Alt A:** {{First Name}}, your Readiness Score is {{Readiness Score}} — here's what it means
+**Alt B:** Your disability claim readiness: {{Readiness Tier}}
+**Alt C:** The report you requested — {{Readiness Score}}/100, {{Readiness Tier}}
 
 ---
 
-{{first_name}},
+{{First Name}},
 
 Here is the Readiness Report you requested — your copy to keep, print, and bring
 to any conversation about your claim.
 
-## Your Claim Readiness Score: {{readiness_score}} / 100
+## Your Claim Readiness Score: {{Readiness Score}} / 100
 
-**Your readiness tier: {{readiness_tier}}**
+**Your readiness tier: {{Readiness Tier}}**
 
-**Where your points came from:** {{sections_summary}}
+**Where your points came from:** {{Sections Summary}}
 
 This score measures one thing: how prepared and organized your claim materials
 appear **today**, based on your own answers. It is not a prediction of SSA's
