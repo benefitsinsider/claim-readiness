@@ -1,13 +1,20 @@
 /*
- * Quiz UI. State lives in `S`; answers persist to localStorage on every change.
- * Health-related sections sit behind an explicit consent gate; declining stops
- * the screen rather than silently skipping scored questions.
+ * Quiz UI. State lives in `S`; progress persists to localStorage on every change.
+ * Health-related sections sit behind an explicit consent gate. Results are
+ * hard-gated behind the report capture form (first visit only — returning
+ * users with a saved profile skip straight to results and get an updated
+ * report). Quiz answers never leave the device; only the submitted contact
+ * details and the score summary are POSTed, to deliver the emailed report.
  */
 
 (function () {
   "use strict";
 
-  var STORE_KEY = "dcr-v1";
+  var STORE_KEY = "dcr-v1";          // in-progress quiz (answers, cursor, consent)
+  var PROFILE_KEY = "dcr-profile-v1"; // name/email/phone after first capture
+  var LAST_KEY = "dcr-last-v1";       // last completed result (for re-check card)
+  var SUBSCRIBE_URL = "/.netlify/functions/subscribe";
+  var FORM_VERSION = "capture-v1";
   var HEALTH_SECTIONS = ["severity", "medical", "function"];
 
   var S = {
@@ -15,8 +22,8 @@
     numbers: null,
     answers: {},
     consent: null,       // {agreed: true, at: ISO string}
-    cursor: 0,           // index into visibleQuestions()
-    helpOpen: false
+    cursor: 0,
+    pendingResult: null
   };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -28,19 +35,14 @@
   }
 
   // ---------- persistence ----------
+  function store(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {} }
+  function fetchStore(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
   function save() {
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify({
-        answers: S.answers, consent: S.consent, cursor: S.cursor, savedAt: new Date().toISOString()
-      }));
-    } catch (e) { /* private mode: resume simply unavailable */ }
+    store(STORE_KEY, { answers: S.answers, consent: S.consent, cursor: S.cursor, savedAt: new Date().toISOString() });
   }
-  function load() {
-    try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch (e) { return null; }
-  }
-  function clearSaved() {
+  function clearProgress() {
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
-    S.answers = {}; S.consent = null; S.cursor = 0;
+    S.answers = {}; S.consent = null; S.cursor = 0; S.pendingResult = null;
   }
 
   // ---------- data ----------
@@ -75,7 +77,7 @@
 
   // ---------- views ----------
   function show(view) {
-    ["landing", "quiz", "results"].forEach(function (v) {
+    ["landing", "quiz", "capture", "results"].forEach(function (v) {
       $("view-" + v).classList.toggle("active", v === view);
     });
     window.scrollTo(0, 0);
@@ -182,7 +184,7 @@
     }
     pruneHidden();
     save();
-    renderCurrent(); // re-render keeps aria state + Continue button honest
+    renderCurrent();
   }
 
   function goNext() {
@@ -192,7 +194,7 @@
       save();
       renderCurrent();
     } else {
-      finish();
+      finishFlow();
     }
   }
 
@@ -212,6 +214,79 @@
     renderQuestion(q);
   }
 
+  // ---------- capture & report ----------
+  function maskEmail(email) {
+    var parts = email.split("@");
+    return parts[0].charAt(0) + "***@" + parts[1];
+  }
+
+  function sendReport(profile, result, onFail) {
+    var sections = {};
+    result.sections.forEach(function (s) { sections[s.id] = s.points + "/" + s.maxPoints; });
+    return fetch(SUBSCRIBE_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone || "",
+        smsConsent: !!profile.smsConsent,
+        consentAt: new Date().toISOString(),
+        formVersion: FORM_VERSION,
+        score: result.total,
+        tierId: result.tier.id,
+        tierName: result.tier.name,
+        sections: sections,
+        gatesClosed: result.gates.filter(function (g) { return g.status === "closed"; })
+                                 .map(function (g) { return g.id; }).join(",")
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("subscribe failed: " + r.status);
+    }).catch(function () {
+      if (onFail) onFail();
+    });
+  }
+
+  function finishFlow() {
+    S.pendingResult = scoreQuiz(S.bank, S.answers);
+    var profile = fetchStore(PROFILE_KEY);
+    if (profile && profile.email) {
+      sendReport(profile, S.pendingResult, function () { noteFail(); });
+      finish(S.pendingResult, "Your updated Readiness Report is on its way to " + esc(maskEmail(profile.email)) + ".");
+    } else {
+      show("capture");
+    }
+  }
+
+  function noteFail() {
+    var n = $("email-note");
+    if (n) n.innerHTML = '<div class="callout-title">About your emailed report</div><p style="margin:0">We had trouble sending your report just now — your score below is complete, and we\'ll retry your report delivery automatically.</p>';
+  }
+
+  function setInvalid(fieldId, invalid) {
+    $(fieldId).classList.toggle("invalid", invalid);
+    return !invalid;
+  }
+
+  function handleCapture(e) {
+    e.preventDefault();
+    var name = $("in-name").value.trim();
+    var email = $("in-email").value.trim();
+    var phone = $("in-phone").value.trim();
+    var sms = $("sms-consent").checked;
+
+    var ok = setInvalid("f-name", name.length === 0);
+    ok = setInvalid("f-email", !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) && ok;
+    var phoneInvalid = (phone.length > 0 && !/^[\d\s().+-]{7,20}$/.test(phone)) || (sms && phone.length === 0);
+    ok = setInvalid("f-phone", phoneInvalid) && ok;
+    if (!ok) return;
+
+    var profile = { name: name, email: email, phone: phone, smsConsent: sms, capturedAt: new Date().toISOString() };
+    store(PROFILE_KEY, profile);
+    sendReport(profile, S.pendingResult, function () { noteFail(); });
+    finish(S.pendingResult, "Your Readiness Report is on its way to " + esc(maskEmail(email)) + ". It usually arrives within a few minutes — check spam/promotions if you don't see it.");
+  }
+
   // ---------- results ----------
   var TIER_NEXT = {
     strong: "People at this stage often pull their earnings record at ssa.gov/myaccount, keep copies of what they've organized, and decide whether to file on their own or talk with a qualified representative first. Filing is free at ssa.gov.",
@@ -224,15 +299,21 @@
     return { strong: "var(--green)", promising: "var(--gold)", building: "var(--amber)", "major-gaps": "var(--crimson)" }[id];
   }
 
-  function finish() {
-    var r = scoreQuiz(S.bank, S.answers);
+  function finish(r, emailNote) {
     var tier = S.bank.tiers.filter(function (t) { return t.id === r.tier.id; })[0];
+    store(LAST_KEY, { total: r.total, tierId: tier.id, tierName: tier.name, at: new Date().toISOString() });
+    // A finished run is not resumable — next visit starts a fresh re-check.
+    try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     var html = "";
 
     html += '<div class="score-hero">' +
       '<div class="eyebrow">Your Claim Readiness Score</div>' +
       '<div class="score-num">' + r.total + "</div>" +
       '<div class="score-of">OUT OF 100</div></div>';
+
+    if (emailNote) {
+      html += '<div class="flag-card no-print" id="email-note"><div class="flag-title">★ Your report is on the way</div><p style="margin:0">' + emailNote + "</p></div>";
+    }
 
     html += '<div class="tier-card">' +
       '<div class="tier-band" style="background:' + tierColor(tier.id) + '"></div>' +
@@ -242,7 +323,6 @@
       '<p class="muted">' + esc(tier.caveat) + "</p>" +
       '<p style="margin-bottom:0;"><strong>What people in this tier often consider next:</strong> ' + esc(TIER_NEXT[tier.id]) + "</p></div>";
 
-    // Gates
     html += '<div class="eyebrow">The Four Hard Gates</div><div class="tier-card" style="padding-top:20px"><div class="tier-band" style="background:var(--navy)"></div>';
     r.gates.forEach(function (g) {
       var label = g.status === "open" ? "Open" : g.status === "review" ? "Worth a review" : "Appears closed";
@@ -255,7 +335,6 @@
       if (g.status === "review") html += '<div class="review-card"><div class="callout-title">' + esc(g.name) + " — worth a review</div><p style='margin:0'>" + esc(g.message) + "</p></div>";
     });
 
-    // Section breakdown
     html += '<div class="eyebrow">Where Your Points Came From</div>';
     r.sections.forEach(function (s) {
       var pct = Math.round((s.points / s.maxPoints) * 100);
@@ -263,14 +342,12 @@
               '<div class="track"><div class="fill" style="width:' + pct + '%"></div></div></div>';
     });
 
-    // Flags
     r.flags.forEach(function (fid) {
       var f = S.bank.flags[fid];
       if (!f) return;
       html += '<div class="flag-card"><div class="flag-title">★ ' + esc(f.title) + "</div><p style='margin:0'>" + esc(f.message) + "</p></div>";
     });
 
-    // Delay warning
     if (r.showDelayWarning) {
       html += '<div class="callout"><div class="callout-title">A note about timing</div><p style="margin:0">' + esc(S.bank.delayWarning) + "</p></div>";
     }
@@ -285,9 +362,31 @@
     $("results-body").innerHTML = html;
     $("btn-print").addEventListener("click", function () { window.print(); });
     $("btn-restart").addEventListener("click", function () {
-      clearSaved(); show("landing");
+      clearProgress();
+      renderLastCard();
+      show("landing");
     });
     show("results");
+  }
+
+  // ---------- landing ----------
+  function renderLastCard() {
+    var existing = $("last-score-card");
+    if (existing) existing.remove();
+    var last = fetchStore(LAST_KEY);
+    if (!last) return;
+    var when = new Date(last.at);
+    var dateStr = when.toLocaleDateString(undefined, { month: "long", day: "numeric" });
+    var card = document.createElement("div");
+    card.className = "last-score-card";
+    card.id = "last-score-card";
+    card.innerHTML = '<div class="eyebrow" style="margin:0 0 4px;">Your last score · ' + esc(dateStr) + "</div>" +
+      '<span class="num">' + last.total + '</span> <span class="muted">/ 100 · ' + esc(last.tierName) + "</span>" +
+      '<p style="margin:8px 0 0;font-size:15.5px;">Readiness changes as your record grows. Re-check to see what\'s moved.</p>';
+    var hero = document.querySelector(".hero");
+    hero.parentNode.insertBefore(card, hero.nextSibling);
+    var startBtn = $("btn-start");
+    if (startBtn && !fetchStore(STORE_KEY)) startBtn.textContent = "Re-Check My Readiness";
   }
 
   // ---------- boot ----------
@@ -297,7 +396,9 @@
     $("figures-stamp").textContent = "Dollar figures current for " + numbers.year +
       " (verified " + numbers.verified + "). Rules and figures are reviewed every January.";
 
-    var saved = load();
+    $("capture-form").addEventListener("submit", handleCapture);
+
+    var saved = fetchStore(STORE_KEY);
     var startBtn = $("btn-start");
 
     if (saved && saved.answers && Object.keys(saved.answers).length > 0) {
@@ -309,7 +410,7 @@
       fresh.textContent = "Start Fresh Instead";
       startBtn.insertAdjacentElement("afterend", fresh);
       fresh.addEventListener("click", function () {
-        clearSaved();
+        clearProgress();
         show("quiz");
         renderCurrent();
       });
@@ -326,6 +427,8 @@
         renderCurrent();
       });
     }
+
+    renderLastCard();
   }
 
   Promise.all([

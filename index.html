@@ -43,11 +43,11 @@
 
     <div class="callout">
       <div class="callout-title">Your answers stay on your device</div>
-      <p style="margin:0;">This screen runs entirely in your browser. Your answers are never sent to us or anyone else.</p>
+      <p style="margin:0;">Your answers are scored entirely in your browser and never sent to us or anyone else. To deliver your emailed Readiness Report, we send only your name, contact details, and score summary.</p>
     </div>
 
     <button class="btn btn-primary" id="btn-start" type="button">Start My Free Self-Screen</button>
-    <p class="muted" style="text-align:center;margin-top:10px;">28 questions · about 4 minutes · free</p>
+    <p class="muted" style="text-align:center;margin-top:10px;">28 questions · about 4 minutes · free · full report by email</p>
 
     <div class="nav-disclaimer">
       <strong>Before you begin.</strong> This score is an educational self-screen. It is not legal advice, not a disability determination, and not a recommendation to file or not file. Only the Social Security Administration can decide a disability claim. Benefits Insider does not represent you before SSA and has not reviewed your records.
@@ -61,6 +61,38 @@
     <div id="quiz-body"></div>
   </section>
 
+  <!-- ============ CAPTURE (before results) ============ -->
+  <section id="view-capture" class="view">
+    <div class="eyebrow">One Last Step</div>
+    <h2>Where should we send your Readiness Report?</h2>
+    <p>Your score is ready. We'll show it on the next screen and email you the <strong>full Readiness Report</strong> — your score, your section-by-section breakdown, and a plain-English guide to how SSA actually evaluates disability claims — so you have a copy to keep, print, and bring to any consultation.</p>
+
+    <form id="capture-form" novalidate>
+      <div class="field" id="f-name">
+        <label for="in-name">First name</label>
+        <input id="in-name" type="text" autocomplete="given-name" required>
+        <p class="err">Please enter your first name.</p>
+      </div>
+      <div class="field" id="f-email">
+        <label for="in-email">Email address</label>
+        <input id="in-email" type="email" autocomplete="email" inputmode="email" required>
+        <p class="err">Please enter a valid email so your report can reach you.</p>
+      </div>
+      <div class="field" id="f-phone">
+        <label for="in-phone">Mobile phone <span class="opt-tag">(optional)</span></label>
+        <input id="in-phone" type="tel" autocomplete="tel" inputmode="tel">
+        <p class="err">Please enter a valid phone number, or leave it blank.</p>
+      </div>
+      <div class="consent-card" style="border-color: var(--callout-border);">
+        <label class="consent-row"><input type="checkbox" id="sms-consent">
+        <span style="font-weight:400;font-size:15px;color:var(--charcoal);">Text me tips about my next steps. By checking this box I agree to receive recurring automated marketing texts from Benefits Insider at the number provided. Consent is not a condition of receiving my report or score. Msg &amp; data rates may apply. Reply STOP to cancel, HELP for help.</span></label>
+      </div>
+      <button class="btn btn-primary" id="btn-capture" type="submit" style="margin-top:20px;">Email My Report &amp; Show My Score</button>
+      <p class="fine-print">By submitting, you agree to receive your Readiness Report by email, plus occasional tips and offers from Benefits Insider. Unsubscribe anytime. See our <a href="privacy.html" target="_blank">Terms &amp; Privacy</a>.</p>
+      <p class="fine-print">Your quiz answers stay on your device. To deliver your report we send only your name, contact details, and score summary.</p>
+    </form>
+  </section>
+
   <!-- ============ RESULTS ============ -->
   <section id="view-results" class="view">
     <div id="results-body"></div>
@@ -71,7 +103,8 @@
 <footer class="site-footer">
   <div class="inner">
     <p><strong>Benefits Insider is not affiliated with or endorsed by the Social Security Administration or any government agency.</strong></p>
-    <p>This tool is an educational self-screen for your own organization and understanding. It is not legal, financial, or tax advice; it is not a disability determination; and it does not predict any decision. Applying for disability benefits is free at ssa.gov, by phone at 1-800-772-1213, or at your local office. Your quiz answers are processed on your device and never transmitted.</p>
+    <p>This tool is an educational self-screen for your own organization and understanding. It is not legal, financial, or tax advice; it is not a disability determination; and it does not predict any decision. Applying for disability benefits is free at ssa.gov, by phone at 1-800-772-1213, or at your local office. Your quiz answers are scored on your device and never transmitted; only the contact details and score summary you submit are sent, to deliver your report.</p>
+    <p><a href="privacy.html" style="color:var(--gray-text);">Terms &amp; Privacy</a></p>
     <p id="figures-stamp"></p>
   </div>
 </footer>

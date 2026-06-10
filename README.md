@@ -53,6 +53,26 @@ Working name only — the public brand/domain must not contain "Social Security,
 - Health questions sit behind a consent gate ("I consent to the collection of health-related information…")
   per WA MHMDA pattern, even though processing is client-side.
 
+## Report capture & beehiiv pipeline
+
+Results are hard-gated behind the report form (first name + email required, phone optional with
+separate SMS consent). Quiz answers never leave the device; the form POSTs contact details + score
+summary (total, tier, section totals, closed gates) + consent record to
+`netlify/functions/subscribe.js`, which upserts a beehiiv subscriber. Returning users (saved profile
+in localStorage) skip the form and get an updated report automatically; their last score shows on the
+landing page as the re-check hook. If the POST fails (e.g., GitHub Pages staging, which has no
+functions), the score still displays with a delivery-failure note — never block the score on our
+infrastructure.
+
+One-time setup:
+1. Netlify → Site settings → Environment variables: `BEEHIIV_API_KEY`, `BEEHIIV_PUB_ID`.
+2. beehiiv → Settings → Subscriber data: create custom fields `first_name`, `phone`, `sms_consent`,
+   `readiness_score`, `readiness_tier`, `sections_summary`, `gates_closed`, `consent_at`,
+   `consent_ip`, `consent_form_version`.
+3. beehiiv → Automations: signup trigger with `utm_source = mydisabilitycheck` sending the report
+   email — full copy in `docs/report-email-template.md`.
+4. Have a lawyer review `privacy.html` and the capture-form disclosure text before paid traffic.
+
 ## Policy watch (check during every January review — and on major SSA news)
 
 - **Age as a vocational factor (the grids).** In Oct 2025 the administration drafted a rule to eliminate

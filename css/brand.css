@@ -147,6 +147,31 @@ h2 { font-size: 24px; }
 .consent-row span { font-size: 17px; font-weight: 600; color: var(--navy); }
 .consent-sub { font-size: 15px; color: var(--gray-text); margin: 12px 0 0 40px; }
 
+/* ---------- Capture form ---------- */
+.field { margin: 0 0 18px; }
+.field label {
+  display: block; font-family: 'Montserrat', sans-serif; font-size: 13px;
+  font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--navy); margin-bottom: 6px;
+}
+.field label .opt-tag { color: var(--gray-text); font-weight: 600; text-transform: none; letter-spacing: 0; }
+.field input {
+  width: 100%; min-height: 56px; padding: 14px 16px;
+  font-family: 'Source Sans 3', sans-serif; font-size: 18px; color: var(--charcoal);
+  background: #fff; border: 2px solid var(--callout-border); border-radius: 8px;
+}
+.field input:focus { outline: none; border-color: var(--navy); }
+.field .err { color: var(--crimson); font-size: 14.5px; margin: 5px 0 0; display: none; }
+.field.invalid input { border-color: var(--crimson); }
+.field.invalid .err { display: block; }
+.fine-print { font-size: 13.5px; color: var(--gray-text); line-height: 1.55; margin: 14px 0 0; }
+.fine-print a { color: var(--gray-text); }
+.last-score-card {
+  background: #fff; border: 1px solid var(--callout-border); border-left: 4px solid var(--gold);
+  border-radius: 8px; padding: 18px 20px; margin: 0 0 22px; text-align: left;
+}
+.last-score-card .num { font-family: 'Lora', Georgia, serif; font-weight: 700; font-size: 30px; color: var(--navy); }
+
 /* ---------- Callouts ---------- */
 .callout, .warning, .nav-disclaimer, .flag-card, .review-card {
   padding: 18px 20px; margin: 18px 0; border-radius: 4px;
