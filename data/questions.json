@@ -15,7 +15,7 @@
       "name": "Strong Evidence Foundation",
       "range": [80, 100],
       "color": "#2E7D5B",
-      "summary": "Based on your answers, your evidence and preparation appear well-organized today. The basic eligibility gates appear to be open, your medical record looks consistent, and your work-limit story is concrete.",
+      "summary": "Based on your answers, your evidence and preparation appear well-organized today. You appear to meet the basic rules, your medical record looks consistent, and you can describe your work limits in concrete terms.",
       "caveat": "This does not guarantee approval, and it does not mean a representative would have nothing to add to your case."
     },
     {
@@ -39,7 +39,7 @@
       "name": "Major Gaps to Address",
       "range": [0, 39],
       "color": "#9B1B30",
-      "summary": "Based on your answers — or because a Hard Gate appears closed for you — the case as it stands today faces significant barriers.",
+      "summary": "Based on your answers — or because one of the four basic rules appears not met — the case as it stands today faces significant barriers.",
       "caveat": "This is not the same as saying you cannot qualify. It says the information in front of you today may not yet show SSA a complete picture. For most people in this tier, the most valuable next step is a conversation with a qualified attorney or eligible non-attorney representative."
     }
   ],
@@ -49,7 +49,7 @@
   "gates": [
     {
       "id": "gate-program",
-      "name": "Program Path",
+      "name": "A Program That Fits You",
       "question": "Do you have enough recent work to be insured for SSDI, or do your income and resources qualify you for SSI?",
       "closedWhen": { "all": [ { "q": "q1-ssdi-insured", "is": ["no"] }, { "q": "q1-ssi-limits", "is": ["no"] } ] },
       "capTier": "major-gaps",
@@ -58,18 +58,18 @@
     },
     {
       "id": "gate-sga",
-      "name": "SGA Earnings",
+      "name": "The Monthly Earnings Limit",
       "question": "Are your countable current earnings above the SGA level for your situation?",
       "closedWhen": { "all": [ { "q": "q2-earnings", "is": ["above"] }, { "q": "q2-exceptions", "is": ["none"] } ] },
       "reviewWhen": { "all": [ { "q": "q2-earnings", "is": ["above"] }, { "q": "q2-exceptions", "is": ["possible", "not-sure"] } ] },
       "capTier": "major-gaps",
-      "closedMessage": "Countable earnings above the SGA threshold can create a major Step 1 issue in the adult disability evaluation, even when the medical evidence is serious. Your readiness tier is capped at Major Gaps to Address.",
-      "reviewMessage": "Your earnings may be above the SGA threshold, but a recognized exception (impairment-related work expenses, a subsidy, or an unsuccessful work attempt) may apply. This is exactly the kind of edge case worth discussing with SSA or a qualified representative.",
-      "reopenMessage": "When countable earnings drop below SGA, or when a recognized exception applies, this gate may open."
+      "closedMessage": "Earnings above Social Security's monthly limit usually stop a claim at the very first step of review, even when the medical evidence is serious. Your readiness tier is capped at Major Gaps to Address.",
+      "reviewMessage": "Your earnings may be above the monthly limit, but a recognized exception (impairment-related work expenses you pay yourself, an employer who pays you more than the work is worth, or a work attempt that failed because of your condition) may apply. This is exactly the kind of situation worth discussing with SSA or a qualified representative.",
+      "reopenMessage": "When countable earnings drop below the monthly limit, or when a recognized exception applies, this rule may no longer stand in the way."
     },
     {
       "id": "gate-duration",
-      "name": "Duration",
+      "name": "The 12-Month Rule",
       "question": "Is your condition and the related work limitation expected to last at least 12 continuous months, or result in death?",
       "closedWhen": { "all": [ { "q": "q3-duration", "is": ["under-12"] } ] },
       "capTier": "building",
@@ -177,7 +177,7 @@
       "id": "q3-duration",
       "section": "severity",
       "text": "Has your condition lasted — or does your doctor expect it to last — at least 12 continuous months?",
-      "helpText": "This is one of SSA's bright-line rules. 'Expected to last' counts: you don't have to wait 12 months to file if your doctor expects the condition to last that long or to be terminal. Combinations of conditions can qualify together even if no single one would.",
+      "helpText": "This is one of SSA's strictest rules. 'Expected to last' counts: you don't have to wait 12 months to file if your doctor expects the condition to last that long or to be terminal. Combinations of conditions can qualify together even if no single one would.",
       "type": "single",
       "options": [
         { "value": "already", "label": "Yes — it has already lasted 12+ months", "points": 6 },

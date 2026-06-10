@@ -317,21 +317,21 @@
 
     html += '<div class="tier-card">' +
       '<div class="tier-band" style="background:' + tierColor(tier.id) + '"></div>' +
-      '<div class="eyebrow" style="margin-top:0">' + (r.cappedBy ? "Hard gate applied · " : "") + r.total + " points</div>" +
+      '<div class="eyebrow" style="margin-top:0">' + (r.cappedBy ? "One of the four rules applies · " : "") + r.total + " points</div>" +
       '<div class="tier-name">' + esc(tier.name) + "</div>" +
       "<p>" + esc(tier.summary) + "</p>" +
       '<p class="muted">' + esc(tier.caveat) + "</p>" +
       '<p style="margin-bottom:0;"><strong>What people in this tier often consider next:</strong> ' + esc(TIER_NEXT[tier.id]) + "</p></div>";
 
-    html += '<div class="eyebrow">The Four Hard Gates</div><div class="tier-card" style="padding-top:20px"><div class="tier-band" style="background:var(--navy)"></div>';
+    html += '<div class="eyebrow">The Four Rules That Can Stop a Claim</div><div class="tier-card" style="padding-top:20px"><div class="tier-band" style="background:var(--navy)"></div>';
     r.gates.forEach(function (g) {
-      var label = g.status === "open" ? "Open" : g.status === "review" ? "Worth a review" : "Appears closed";
+      var label = g.status === "open" ? "Looks met" : g.status === "review" ? "Worth a review" : "Appears not met";
       html += '<div class="gate-pill gate-' + g.status + '"><span class="gate-dot"></span>' +
               "<span>" + esc(g.name) + '</span><span class="gate-status">' + label + "</span></div>";
     });
     html += "</div>";
     r.gates.forEach(function (g) {
-      if (g.status === "closed") html += '<div class="warning"><div class="warning-title">' + esc(g.name) + " — appears closed</div><p style='margin:0'>" + esc(g.message) + "</p></div>";
+      if (g.status === "closed") html += '<div class="warning"><div class="warning-title">' + esc(g.name) + " — appears not met</div><p style='margin:0'>" + esc(g.message) + "</p></div>";
       if (g.status === "review") html += '<div class="review-card"><div class="callout-title">' + esc(g.name) + " — worth a review</div><p style='margin:0'>" + esc(g.message) + "</p></div>";
     });
 
