@@ -1,10 +1,12 @@
 /*
- * Receives the capture-form POST and does two independent jobs:
+ * Receives the capture-form POST and does three independent jobs:
  *   1. Creates/updates a beehiiv subscriber (marketing stream: Daily 3, nurture)
  *      with the score summary and consent record as custom fields.
  *   2. Sends the branded Readiness Report email instantly via Resend
  *      (transactional stream) — see report-email.js for the template.
- * Either job failing does not block the other. Quiz answers are never sent
+ *   3. Stores the submission record in Netlify Blobs (store "submissions")
+ *      for the admin dashboard at /admin.html.
+ * Any job failing does not block the others. Quiz answers are never sent
  * here — only contact details + score/tier/section totals.
  *
  * Required Netlify env vars:
@@ -118,6 +120,32 @@ exports.handler = async function (event) {
     } catch (err) {
       console.error("resend request failed", err.message);
     }
+  }
+
+  // Job 3: store the submission for the admin dashboard
+  try {
+    const { getStore } = await import("@netlify/blobs");
+    const store = getStore("submissions");
+    const at = new Date().toISOString();
+    const key = "s/" + at + "-" + Math.random().toString(36).slice(2, 8);
+    await store.setJSON(key, {
+      at: at,
+      name: clip(body.name, 60),
+      email: email,
+      phone: clip(body.phone, 25),
+      smsConsent: !!body.smsConsent,
+      score: clip(body.score, 5),
+      tierName: clip(body.tierName, 40),
+      sections: sections,
+      gatesClosed: clip(body.gatesClosed, 100),
+      consentAt: clip(body.consentAt, 30),
+      consentIp: clip(event.headers["x-nf-client-connection-ip"], 45),
+      formVersion: clip(body.formVersion, 20),
+      subscribed: subscribed,
+      reportSent: reportSent
+    });
+  } catch (err) {
+    console.error("blob store failed", err.message);
   }
 
   if (!subscribed && !reportSent) {

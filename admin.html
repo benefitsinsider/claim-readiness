@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Submissions — Disability Claim Readiness Score</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Montserrat:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/brand.css">
+<style>
+  .wrap { max-width: 1080px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 22px 0; }
+  .stat-card { background: #fff; border: 1px solid var(--callout-border); border-top: 4px solid var(--gold); border-radius: 8px; padding: 14px 18px; }
+  .stat-card .num { font-family: 'Lora', Georgia, serif; font-size: 34px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+  .stat-card .lbl { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-text); }
+  table.subs { width: 100%; border-collapse: collapse; background: #fff; font-size: 14.5px; }
+  table.subs th { background: var(--navy); color: var(--cream); font-family: 'Montserrat', sans-serif; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; text-align: left; padding: 10px 10px; position: sticky; top: 0; }
+  table.subs td { padding: 9px 10px; border-bottom: 1px solid var(--rule-light); vertical-align: top; }
+  table.subs tr:hover td { background: var(--gold-bg); }
+  .tier-chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap; }
+  .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0; }
+  .toolbar input { flex: 1; min-width: 200px; min-height: 44px; padding: 8px 12px; font-size: 15px; border: 2px solid var(--callout-border); border-radius: 6px; }
+  .btn-sm { width: auto; min-height: 44px; padding: 8px 18px; font-size: 14px; }
+  .mono { font-size: 12.5px; color: var(--gray-text); }
+  #login-view .consent-card { max-width: 420px; margin: 30px auto; }
+  #login-view input[type=password] { width: 100%; min-height: 52px; padding: 10px 14px; font-size: 17px; border: 2px solid var(--callout-border); border-radius: 6px; margin: 10px 0 16px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="./"><img src="assets/logo-white.png" alt="Benefits Insider" height="30" style="display:block;mix-blend-mode:screen"></a>
+    <span class="muted" style="color:var(--gold-light);font-size:12.5px;letter-spacing:0.06em;">SUBMISSIONS DASHBOARD</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="login-view">
+    <div class="consent-card">
+      <h2 style="margin-top:0;">Sign in</h2>
+      <p class="muted">This dashboard shows quiz submissions and is for site administrators only.</p>
+      <form id="login-form">
+        <label for="pw" style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--navy);">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" required>
+        <button class="btn btn-primary" type="submit" id="login-btn">Sign In</button>
+        <p id="login-err" class="muted" style="color:var(--crimson);display:none;margin-top:10px;"></p>
+      </form>
+    </div>
+  </section>
+
+  <section id="dash-view" style="display:none;">
+    <div class="eyebrow" style="margin-top:26px;">Disability Claim Readiness Score</div>
+    <h1 style="font-size:28px;">Submissions</h1>
+
+    <div class="stat-grid" id="stats"></div>
+
+    <div class="toolbar">
+      <input id="filter" type="search" placeholder="Filter by name, email, tier…">
+      <button class="btn btn-ghost btn-sm" id="btn-refresh" type="button">Refresh</button>
+      <button class="btn btn-ghost btn-sm" id="btn-csv" type="button">Download CSV</button>
+      <button class="btn btn-ghost btn-sm" id="btn-logout" type="button">Log out</button>
+    </div>
+
+    <div style="overflow-x:auto;border:1px solid var(--callout-border);border-radius:8px;">
+      <table class="subs">
+        <thead><tr>
+          <th>When</th><th>Name</th><th>Email</th><th>Phone</th><th>SMS</th>
+          <th>Score</th><th>Tier</th><th>Rules not met</th><th>Sections</th><th>Delivery</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <p class="muted" id="count-note" style="margin-top:10px;"></p>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var API = "/.netlify/functions/admin-api";
+  var DATA = [];
+
+  function $(id) { return document.getElementById(id); }
+  function token() { return sessionStorage.getItem("dcr-admin-token") || ""; }
+
+  function tierColor(name) {
+    if (/strong/i.test(name)) return "#2E7D5B";
+    if (/promising/i.test(name)) return "#B98A2E";
+    if (/building/i.test(name)) return "#C58B3A";
+    return "#9B1B30";
+  }
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function show(view) {
+    $("login-view").style.display = view === "login" ? "" : "none";
+    $("dash-view").style.display = view === "dash" ? "" : "none";
+  }
+
+  function renderStats() {
+    var now = Date.now(), day = 86400000;
+    var today = new Date(); today.setHours(0, 0, 0, 0);
+    var t = 0, w = 0, m = 0, scores = [];
+    DATA.forEach(function (s) {
+      var ts = Date.parse(s.at);
+      if (ts >= today.getTime()) t++;
+      if (ts >= now - 7 * day) w++;
+      if (ts >= now - 30 * day) m++;
+      var sc = parseInt(s.score, 10);
+      if (!isNaN(sc)) scores.push(sc);
+    });
+    var avg = scores.length ? Math.round(scores.reduce(function (a, b) { return a + b; }, 0) / scores.length) : "—";
+    $("stats").innerHTML =
+      '<div class="stat-card"><div class="num">' + t + '</div><div class="lbl">Today</div></div>' +
+      '<div class="stat-card"><div class="num">' + w + '</div><div class="lbl">Last 7 days</div></div>' +
+      '<div class="stat-card"><div class="num">' + m + '</div><div class="lbl">Last 30 days</div></div>' +
+      '<div class="stat-card"><div class="num">' + DATA.length + '</div><div class="lbl">Loaded</div></div>' +
+      '<div class="stat-card"><div class="num">' + avg + '</div><div class="lbl">Avg score</div></div>';
+  }
+
+  function renderRows() {
+    var q = $("filter").value.trim().toLowerCase();
+    var rows = DATA.filter(function (s) {
+      if (!q) return true;
+      return (s.name + " " + s.email + " " + s.tierName + " " + s.score).toLowerCase().indexOf(q) !== -1;
+    });
+    $("rows").innerHTML = rows.map(function (s) {
+      var when = new Date(s.at);
+      var delivery = (s.subscribed ? "list ✓" : "list ✗") + " · " + (s.reportSent ? "email ✓" : "email ✗");
+      return "<tr>" +
+        '<td class="mono">' + when.toLocaleDateString() + "<br>" + when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) + "</td>" +
+        "<td>" + esc(s.name) + "</td>" +
+        "<td>" + esc(s.email) + "</td>" +
+        '<td class="mono">' + esc(s.phone || "—") + "</td>" +
+        "<td>" + (s.smsConsent ? "yes" : "—") + "</td>" +
+        '<td style="font-weight:700;color:var(--navy);">' + esc(s.score) + "</td>" +
+        '<td><span class="tier-chip" style="background:' + tierColor(s.tierName) + '">' + esc(s.tierName) + "</span></td>" +
+        '<td class="mono">' + esc(s.gatesClosed || "none") + "</td>" +
+        '<td class="mono">' + esc(s.sections) + "</td>" +
+        '<td class="mono">' + delivery + "</td>" +
+        "</tr>";
+    }).join("");
+    $("count-note").textContent = rows.length + " of " + DATA.length + " submissions shown" + (q ? ' (filtered: "' + q + '")' : "");
+  }
+
+  function loadData() {
+    return fetch(API + "?op=list&limit=1000", { headers: { Authorization: "Bearer " + token() } })
+      .then(function (r) {
+        if (r.status === 401) { sessionStorage.removeItem("dcr-admin-token"); show("login"); throw new Error("expired"); }
+        if (!r.ok) throw new Error("load failed");
+        return r.json();
+      })
+      .then(function (j) {
+        DATA = j.submissions || [];
+        renderStats(); renderRows();
+        show("dash");
+      });
+  }
+
+  $("login-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    $("login-btn").disabled = true;
+    $("login-err").style.display = "none";
+    fetch(API + "?op=login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: $("pw").value })
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || "sign-in failed");
+        sessionStorage.setItem("dcr-admin-token", res.j.token);
+        $("pw").value = "";
+        return loadData();
+      })
+      .catch(function (err) {
+        $("login-err").textContent = err.message;
+        $("login-err").style.display = "";
+      })
+      .finally(function () { $("login-btn").disabled = false; });
+  });
+
+  $("filter").addEventListener("input", renderRows);
+  $("btn-refresh").addEventListener("click", function () { loadData().catch(function () {}); });
+  $("btn-logout").addEventListener("click", function () {
+    sessionStorage.removeItem("dcr-admin-token"); DATA = []; show("login");
+  });
+  $("btn-csv").addEventListener("click", function () {
+    var cols = ["at", "name", "email", "phone", "smsConsent", "score", "tierName", "gatesClosed", "sections", "consentAt", "consentIp", "formVersion", "subscribed", "reportSent"];
+    var lines = [cols.join(",")].concat(DATA.map(function (s) {
+      return cols.map(function (c) { return '"' + String(s[c] == null ? "" : s[c]).replace(/"/g, '""') + '"'; }).join(",");
+    }));
+    var blob = new Blob([lines.join("\n")], { type: "text/csv" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "submissions-" + new Date().toISOString().slice(0, 10) + ".csv";
+    a.click();
+  });
+
+  if (token()) loadData().catch(function () { show("login"); });
+  else show("login");
+})();
+</script>
+</body>
+</html>
