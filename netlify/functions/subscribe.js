@@ -1,11 +1,20 @@
 /*
- * Receives the capture-form POST and creates/updates a beehiiv subscriber with
- * the score summary and consent record as custom fields. Quiz answers are never
- * sent here — only contact details + score/tier/section totals.
+ * Receives the capture-form POST and does two independent jobs:
+ *   1. Creates/updates a beehiiv subscriber (marketing stream: Daily 3, nurture)
+ *      with the score summary and consent record as custom fields.
+ *   2. Sends the branded Readiness Report email instantly via Resend
+ *      (transactional stream) — see report-email.js for the template.
+ * Either job failing does not block the other. Quiz answers are never sent
+ * here — only contact details + score/tier/section totals.
  *
  * Required Netlify env vars:
  *   BEEHIIV_API_KEY  — beehiiv Settings → Integrations → API
  *   BEEHIIV_PUB_ID   — the publication id (starts with "pub_")
+ *   RESEND_API_KEY   — resend.com API key (report email is skipped if absent)
+ * Optional:
+ *   REPORT_FROM            — sender, default "Kwame at Benefits Insider <reports@mydisabilitycheck.org>"
+ *   REPORT_REPLY_TO        — reply-to address (e.g. hello@benefitsinsider.co)
+ *   REPORT_POSTAL_ADDRESS  — mailing address for the email footer
  *
  * The custom fields below must exist in beehiiv (Settings → Custom fields),
  * named exactly (Title Case, matching beehiiv's defaults): First Name,
@@ -13,6 +22,8 @@
  * Sections Summary, Gates Closed, Consent At, Consent IP,
  * Consent Form Version.
  */
+
+const { buildReportEmail } = require("./report-email");
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
@@ -56,6 +67,8 @@ exports.handler = async function (event) {
     ]
   };
 
+  // Job 1: beehiiv subscriber (marketing stream)
+  let subscribed = false;
   try {
     const res = await fetch(
       `https://api.beehiiv.com/v2/publications/${process.env.BEEHIIV_PUB_ID}/subscriptions`,
@@ -68,14 +81,47 @@ exports.handler = async function (event) {
         body: JSON.stringify(payload)
       }
     );
-    if (!res.ok) {
-      const detail = await res.text();
-      console.error("beehiiv error", res.status, detail.slice(0, 500));
-      return { statusCode: 502, body: JSON.stringify({ error: "subscription failed" }) };
+    if (res.ok) {
+      subscribed = true;
+    } else {
+      console.error("beehiiv error", res.status, (await res.text()).slice(0, 500));
     }
-    return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (err) {
     console.error("beehiiv request failed", err.message);
-    return { statusCode: 502, body: JSON.stringify({ error: "subscription failed" }) };
   }
+
+  // Job 2: instant Readiness Report via Resend (transactional stream)
+  let reportSent = false;
+  if (process.env.RESEND_API_KEY) {
+    try {
+      const msg = buildReportEmail(body);
+      const mail = {
+        from: process.env.REPORT_FROM || "Kwame at Benefits Insider <reports@mydisabilitycheck.org>",
+        to: [email],
+        subject: msg.subject,
+        html: msg.html
+      };
+      if (process.env.REPORT_REPLY_TO) mail.reply_to = process.env.REPORT_REPLY_TO;
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`
+        },
+        body: JSON.stringify(mail)
+      });
+      if (res.ok) {
+        reportSent = true;
+      } else {
+        console.error("resend error", res.status, (await res.text()).slice(0, 500));
+      }
+    } catch (err) {
+      console.error("resend request failed", err.message);
+    }
+  }
+
+  if (!subscribed && !reportSent) {
+    return { statusCode: 502, body: JSON.stringify({ error: "delivery failed" }) };
+  }
+  return { statusCode: 200, body: JSON.stringify({ ok: true, subscribed: subscribed, reportSent: reportSent }) };
 };
