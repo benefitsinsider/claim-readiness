@@ -1,10 +1,14 @@
 /*
- * Receives the capture-form POST and does two independent jobs:
+ * Receives the capture-form POST and does three independent jobs:
  *   1. Creates/updates a beehiiv subscriber (marketing stream: Daily 3, nurture)
- *      with the score summary and consent record as custom fields.
+ *      with the score summary and consent record as custom fields. beehiiv is
+ *      the ONLY identified datastore.
  *   2. Sends the branded Readiness Report email instantly via Resend
  *      (transactional stream) — see report-email.js for the template.
- * Either job failing does not block the other. Quiz answers are never sent
+ *   3. Writes an ANONYMOUS stats record (score/tier/sections/stage + hour
+ *      bucket — deliberately NO name, email, phone, or IP) to Netlify Blobs
+ *      store "stats" for the aggregate dashboard at /stats.html.
+ * Any job failing does not block the others. Quiz answers are never sent
  * here — only contact details + score/tier/section totals.
  *
  * Required Netlify env vars:
@@ -118,6 +122,26 @@ exports.handler = async function (event) {
     } catch (err) {
       console.error("resend request failed", err.message);
     }
+  }
+
+  // Job 3: anonymous stats record — NO identifiers, hour-bucketed timestamp
+  try {
+    const { getStore } = await import("@netlify/blobs");
+    const store = getStore("stats");
+    const hour = new Date();
+    hour.setMinutes(0, 0, 0);
+    const bucket = hour.toISOString();
+    const key = "d/" + bucket + "-" + Math.random().toString(36).slice(2, 10);
+    await store.setJSON(key, {
+      at: bucket,
+      score: parseInt(body.score, 10) || 0,
+      tierId: clip(body.tierId, 20),
+      sections: sections,
+      gatesClosed: clip(body.gatesClosed, 100),
+      stage: clip(body.stage, 20)
+    });
+  } catch (err) {
+    console.error("stats write failed", err.message);
   }
 
   if (!subscribed && !reportSent) {

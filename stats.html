@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Stats — Disability Claim Readiness Score</title>
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Montserrat:wght@600;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/brand.css">
+<style>
+  .wrap { max-width: 880px; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 22px 0; }
+  .stat-card { background: #fff; border: 1px solid var(--callout-border); border-top: 4px solid var(--gold); border-radius: 8px; padding: 14px 18px; }
+  .stat-card .num { font-family: 'Lora', Georgia, serif; font-size: 34px; font-weight: 700; color: var(--navy); line-height: 1.1; }
+  .stat-card .lbl { font-family: 'Montserrat', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gray-text); }
+  .chart-card { background: #fff; border: 1px solid var(--callout-border); border-radius: 8px; padding: 18px 22px; margin: 0 0 18px; }
+  .chart-card h3 { font-family: 'Montserrat', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--navy); margin: 0 0 14px; border-bottom: 2px solid var(--gold); padding-bottom: 8px; }
+  .hbar { margin: 0 0 12px; }
+  .hbar .lab { display: flex; justify-content: space-between; font-size: 15px; margin-bottom: 4px; }
+  .hbar .lab .v { font-family: 'Montserrat', sans-serif; font-weight: 700; color: var(--navy); }
+  .hbar .track { height: 14px; background: #ECE6D8; border-radius: 7px; overflow: hidden; }
+  .hbar .fill { height: 100%; border-radius: 7px; background: var(--navy); }
+  #login-view .consent-card { max-width: 420px; margin: 30px auto; }
+  #login-view input[type=password] { width: 100%; min-height: 52px; padding: 10px 14px; font-size: 17px; border: 2px solid var(--callout-border); border-radius: 6px; margin: 10px 0 16px; }
+  .toolbar { display: flex; gap: 10px; align-items: center; margin: 14px 0; }
+  .btn-sm { width: auto; min-height: 44px; padding: 8px 18px; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="inner">
+    <a class="brand" href="./"><img src="assets/logo-white.png" alt="Benefits Insider" height="30" style="display:block;mix-blend-mode:screen"></a>
+    <span class="muted" style="color:var(--gold-light);font-size:12.5px;letter-spacing:0.06em;">ANONYMOUS STATS</span>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section id="login-view">
+    <div class="consent-card">
+      <h2 style="margin-top:0;">Sign in</h2>
+      <p class="muted">Aggregate quiz statistics — no names, emails, or contact info are stored here.</p>
+      <form id="login-form">
+        <label for="pw" style="font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--navy);">Password</label>
+        <input id="pw" type="password" autocomplete="current-password" required>
+        <button class="btn btn-primary" type="submit" id="login-btn">Sign In</button>
+        <p id="login-err" class="muted" style="color:var(--crimson);display:none;margin-top:10px;"></p>
+      </form>
+    </div>
+  </section>
+
+  <section id="dash-view" style="display:none;">
+    <div class="eyebrow" style="margin-top:26px;">Disability Claim Readiness Score</div>
+    <h1 style="font-size:28px;">Where People Stand — Broadly</h1>
+    <div class="toolbar">
+      <button class="btn btn-ghost btn-sm" id="btn-refresh" type="button">Refresh</button>
+      <button class="btn btn-ghost btn-sm" id="btn-logout" type="button">Log out</button>
+      <span class="muted" id="updated"></span>
+    </div>
+
+    <div class="stat-grid" id="cards"></div>
+
+    <div class="chart-card"><h3>Score Distribution</h3><div id="bands"></div></div>
+    <div class="chart-card"><h3>Readiness Tiers</h3><div id="tiers"></div></div>
+    <div class="chart-card"><h3>Where They Are in the Process</h3><div id="stages"></div></div>
+    <div class="chart-card"><h3>Average Points by Section (% of max)</h3><div id="sections"></div></div>
+    <div class="chart-card"><h3>Rules Not Met (count of submissions)</h3><div id="gates"></div></div>
+    <div class="chart-card"><h3>Submissions — Last 30 Days</h3><div id="daily"></div></div>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+  var API = "/.netlify/functions/stats-api";
+
+  var TIER_NAMES = { strong: "Strong Evidence Foundation", promising: "Promising but Incomplete", building: "Building Your Case", "major-gaps": "Major Gaps to Address" };
+  var TIER_COLORS = { strong: "#2E7D5B", promising: "#B98A2E", building: "#C58B3A", "major-gaps": "#9B1B30" };
+  var STAGE_NAMES = { "not-applied": "Haven't applied yet", "applied-waiting": "Applied, waiting", "denied": "Denied, deciding", "unknown": "(not answered)" };
+  var SECTION_NAMES = { program: "Program Path", work: "Work & Earnings", severity: "Condition", medical: "Medical Records", function: "Work Limits Story", vocational: "Age & Past Work", risk: "Risk Factors" };
+  var RULE_NAMES = { "gate-program": "A Program That Fits", "gate-sga": "Monthly Earnings Limit", "gate-duration": "12-Month Rule", "gate-medical": "Medical Evidence" };
+
+  function $(id) { return document.getElementById(id); }
+  function token() { return sessionStorage.getItem("dcr-stats-token") || ""; }
+  function show(view) {
+    $("login-view").style.display = view === "login" ? "" : "none";
+    $("dash-view").style.display = view === "dash" ? "" : "none";
+  }
+
+  function bars(el, entries, total, colorFn) {
+    el.innerHTML = entries.map(function (e) {
+      var pct = total ? Math.round((e.count / total) * 100) : 0;
+      return '<div class="hbar"><div class="lab"><span>' + e.label + '</span><span class="v">' + e.count + (e.suffix || (' · ' + pct + '%')) + '</span></div>' +
+        '<div class="track"><div class="fill" style="width:' + Math.max(e.pct != null ? e.pct : pct, 2) + '%;background:' + (colorFn ? colorFn(e) : 'var(--navy)') + '"></div></div></div>';
+    }).join("") || '<p class="muted">No data yet.</p>';
+  }
+
+  function render(a) {
+    var landed7 = 0; var today = 0;
+    var todayKey = new Date().toISOString().slice(0, 10);
+    var cutoff7 = Date.now() - 7 * 86400000;
+    Object.keys(a.daily || {}).forEach(function (d) {
+      if (d === todayKey) today += a.daily[d];
+      if (Date.parse(d) >= cutoff7) landed7 += a.daily[d];
+    });
+    $("cards").innerHTML =
+      '<div class="stat-card"><div class="num">' + a.total + '</div><div class="lbl">All-time</div></div>' +
+      '<div class="stat-card"><div class="num">' + today + '</div><div class="lbl">Today</div></div>' +
+      '<div class="stat-card"><div class="num">' + landed7 + '</div><div class="lbl">Last 7 days</div></div>' +
+      '<div class="stat-card"><div class="num">' + (a.avgScore == null ? "—" : a.avgScore) + '</div><div class="lbl">Avg score</div></div>';
+
+    bars($("bands"), Object.keys(a.scoreBands).map(function (b) {
+      return { label: b, count: a.scoreBands[b] };
+    }), a.total);
+
+    bars($("tiers"), ["strong", "promising", "building", "major-gaps"].map(function (t) {
+      return { label: TIER_NAMES[t] || t, count: a.tiers[t] || 0, key: t };
+    }), a.total, function (e) { return TIER_COLORS[e.key] || "var(--navy)"; });
+
+    bars($("stages"), Object.keys(a.stages).map(function (s) {
+      return { label: STAGE_NAMES[s] || s, count: a.stages[s] };
+    }), a.total);
+
+    bars($("sections"), Object.keys(SECTION_NAMES).filter(function (k) { return a.sections[k]; }).map(function (k) {
+      var s = a.sections[k];
+      return { label: SECTION_NAMES[k] + " (avg " + s.avgPts + "/" + s.max + ")", count: s.avgPct, suffix: "%", pct: s.avgPct };
+    }), 100, function () { return "var(--gold)"; });
+
+    bars($("gates"), Object.keys(a.gates).map(function (g) {
+      return { label: RULE_NAMES[g] || g, count: a.gates[g] };
+    }), a.total, function () { return "#9B1B30"; });
+
+    var days = Object.keys(a.daily || {}).sort();
+    var max = Math.max.apply(null, days.map(function (d) { return a.daily[d]; }).concat([1]));
+    bars($("daily"), days.map(function (d) {
+      return { label: d, count: a.daily[d], pct: Math.round((a.daily[d] / max) * 100), suffix: "" };
+    }), null, function () { return "var(--navy)"; });
+
+    $("updated").textContent = "Updated " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
+
+  function loadData() {
+    return fetch(API + "?op=aggregate", { headers: { Authorization: "Bearer " + token() } })
+      .then(function (r) {
+        if (r.status === 401) { sessionStorage.removeItem("dcr-stats-token"); show("login"); throw new Error("expired"); }
+        if (!r.ok) throw new Error("load failed");
+        return r.json();
+      })
+      .then(function (a) { render(a); show("dash"); });
+  }
+
+  $("login-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    $("login-btn").disabled = true;
+    $("login-err").style.display = "none";
+    fetch(API + "?op=login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: $("pw").value })
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.j.error || "sign-in failed");
+        sessionStorage.setItem("dcr-stats-token", res.j.token);
+        $("pw").value = "";
+        return loadData();
+      })
+      .catch(function (err) {
+        $("login-err").textContent = err.message;
+        $("login-err").style.display = "";
+      })
+      .finally(function () { $("login-btn").disabled = false; });
+  });
+
+  $("btn-refresh").addEventListener("click", function () { loadData().catch(function () {}); });
+  $("btn-logout").addEventListener("click", function () {
+    sessionStorage.removeItem("dcr-stats-token"); show("login");
+  });
+
+  if (token()) loadData().catch(function () { show("login"); });
+  else show("login");
+})();
+</script>
+</body>
+</html>

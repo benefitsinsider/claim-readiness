@@ -238,7 +238,8 @@
         tierName: result.tier.name,
         sections: sections,
         gatesClosed: result.gates.filter(function (g) { return g.status === "closed"; })
-                                 .map(function (g) { return g.id; }).join(",")
+                                 .map(function (g) { return g.id; }).join(","),
+        stage: S.answers["q0-stage"] || ""
       })
     }).then(function (r) {
       if (!r.ok) throw new Error("subscribe failed: " + r.status);
