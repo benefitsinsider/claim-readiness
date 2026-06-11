@@ -100,6 +100,18 @@
   "questions": [
 
     {
+      "id": "q0-stage",
+      "section": "program",
+      "text": "Where are you in the process right now?",
+      "helpText": "This doesn't affect your score — it helps us point your results at the right next step.",
+      "type": "single",
+      "options": [
+        { "value": "not-applied", "label": "I haven't applied yet", "points": 0 },
+        { "value": "applied-waiting", "label": "I've applied and I'm waiting", "points": 0, "flags": ["stage-applied"] },
+        { "value": "denied", "label": "I was denied and I'm deciding what's next", "points": 0, "flags": ["stage-denied"] }
+      ]
+    },
+    {
       "id": "q1-ssdi-insured",
       "section": "program",
       "text": "Have you worked and paid Social Security taxes for about 5 of the last 10 years?",
@@ -448,6 +460,14 @@
   ],
 
   "flags": {
+    "stage-denied": {
+      "title": "You mentioned a denial — watch the appeal clock",
+      "message": "Appeals generally must be filed within 60 days of receiving a denial notice, and most people who are eventually approved were denied at least once first. If your denial is recent, confirming your exact deadline — with SSA or a qualified representative — may matter more than anything else in this report. Many representatives offer free consultations for exactly this situation."
+    },
+    "stage-applied": {
+      "title": "While you wait — keep building the record",
+      "message": "A pending application doesn't pause the evidence. Keep your treatment visits consistent, keep your symptom journal going, and keep copies of anything new. If SSA schedules an exam or sends forms, respond by the stated deadlines — and note every call's date and reference number."
+    },
     "dli-check": {
       "title": "Check your Date Last Insured",
       "message": "Your Date Last Insured (DLI) is the last day you meet the SSDI recent-work requirement. If it has passed, you can still qualify — but only by proving your disability began on or before that date. Pull your earnings record at ssa.gov/myaccount this week; it takes 10 minutes."
