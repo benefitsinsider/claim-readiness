@@ -24,7 +24,7 @@
  * named exactly (Title Case, matching beehiiv's defaults): First Name,
  * Phone Number, SMS Consent, Readiness Score, Readiness Tier,
  * Sections Summary, Gates Closed, Consent At, Consent IP,
- * Consent Form Version.
+ * Consent Form Version, Stage.
  */
 
 const { buildReportEmail } = require("./report-email");
@@ -67,7 +67,8 @@ exports.handler = async function (event) {
       { name: "Gates Closed", value: clip(body.gatesClosed, 100) },
       { name: "Consent At", value: clip(body.consentAt, 30) },
       { name: "Consent IP", value: clip(event.headers["x-nf-client-connection-ip"], 45) },
-      { name: "Consent Form Version", value: clip(body.formVersion, 20) }
+      { name: "Consent Form Version", value: clip(body.formVersion, 20) },
+      { name: "Stage", value: clip(body.stage, 20) }
     ]
   };
 
