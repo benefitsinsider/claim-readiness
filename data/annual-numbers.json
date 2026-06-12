@@ -1,6 +1,6 @@
 {
   "year": 2026,
-  "verified": "2026-06-09",
+  "verified": "2026-06-13",
   "reviewCadence": "Update every January when SSA publishes COLA figures. Sources: ssa.gov/oact/cola/sga.html, ssa.gov/redbook, ssa.gov/representation.",
   "figures": {
     "sga_nonblind_monthly": 1690,
@@ -14,7 +14,7 @@
     "max_credits_per_year": 4,
     "earnings_to_max_credits": 7560,
     "representative_fee_cap": 9200,
-    "average_ssdi_benefit_monthly": 1580
+    "average_ssdi_benefit_monthly": 1630
   },
   "kit": {
     "url": "",

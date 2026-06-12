@@ -340,7 +340,7 @@
           "<ul>" +
             "<li>11 plain-language chapters matched to the seven areas you were just scored on</li>" +
             "<li>The full worksheets behind your score — re-check yourself as your record grows</li>" +
-            "<li>123-page printable PDF, plus the symptom diary, doctor guide, and SSA phone card</li>" +
+            "<li>126-page printable PDF, plus the symptom diary, doctor guide, and SSA phone card</li>" +
           "</ul>" +
           '<a class="btn-kit" href="' + esc(kit.url) + '" target="_blank" rel="noopener">Get the Readiness Kit — ' + esc(kit.price || "$47") + "</a>" +
           '<p class="sub">One-time purchase · Instant download · Yours to keep and print</p>' +

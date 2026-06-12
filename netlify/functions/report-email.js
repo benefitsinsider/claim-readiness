@@ -136,7 +136,7 @@ function kitBlock(data) {
         <p style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#2C2C2C;margin:0 0 16px;">
           &#10003;&nbsp;11 plain-language chapters matched to the seven areas you were scored on<br>
           &#10003;&nbsp;The full worksheets behind your score &mdash; re-check yourself as your record grows<br>
-          &#10003;&nbsp;123-page printable PDF + symptom diary, doctor guide, and SSA phone card</p>
+          &#10003;&nbsp;126-page printable PDF + symptom diary, doctor guide, and SSA phone card</p>
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
           <td style="background:#D4A24C;border-radius:6px;text-align:center;">
             <a href="${escapeHtml(url)}" style="display:block;padding:15px 22px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;color:#1A2B4A;text-decoration:none;">Get the Readiness Kit &mdash; ${escapeHtml(price)}</a>
