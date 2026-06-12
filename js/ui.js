@@ -300,6 +300,55 @@
     return { strong: "var(--green)", promising: "var(--gold)", building: "var(--amber)", "major-gaps": "var(--crimson)" }[id];
   }
 
+  // ---------- Kit promo ----------
+  var KIT_CHAPTERS = {
+    program: "Chapter 1", work: "Chapter 2", severity: "Chapter 3",
+    medical: "Chapter 4", function: "Chapter 5", vocational: "Chapters 6–7", risk: "Chapter 8"
+  };
+  var KIT_FIXABLE = ["program", "work", "severity", "medical", "function", "risk"];
+
+  function kitPromoHtml(r) {
+    var kit = S.numbers.kit;
+    if (!kit || !kit.url) return "";
+
+    var weak = r.sections
+      .map(function (s) { return { id: s.id, points: s.points, maxPoints: s.maxPoints, title: s.title.replace(/^Your /, "") }; })
+      .filter(function (s) { return KIT_FIXABLE.indexOf(s.id) !== -1 && s.points < s.maxPoints; })
+      .sort(function (a, b) { return (a.points / a.maxPoints) - (b.points / b.maxPoints); })
+      .slice(0, 2);
+
+    var personal;
+    if (weak.length === 2) {
+      personal = "Your lowest areas were <strong>" + esc(weak[0].title) + " (" + weak[0].points + "/" + weak[0].maxPoints +
+        ")</strong> and <strong>" + esc(weak[1].title) + " (" + weak[1].points + "/" + weak[1].maxPoints +
+        ")</strong> — " + KIT_CHAPTERS[weak[0].id] + " and " + KIT_CHAPTERS[weak[1].id] + " of the Kit walk you through fixing exactly those, most of it in 30–90 days.";
+    } else if (weak.length === 1) {
+      personal = "Your lowest area was <strong>" + esc(weak[0].title) + " (" + weak[0].points + "/" + weak[0].maxPoints +
+        ")</strong> — " + KIT_CHAPTERS[weak[0].id] + " of the Kit walks you through fixing exactly that.";
+    } else {
+      personal = "Your preparation scored well — the Kit is how people keep it organized, consistent, and ready through filing and beyond.";
+    }
+
+    return '<div class="kit-promo no-print">' +
+      '<div class="band"></div>' +
+      '<div class="inner">' +
+        '<img class="cover" src="assets/kit-cover.png" alt="The Disability Claim Readiness Kit" width="120">' +
+        '<div style="flex:1;min-width:0;">' +
+          '<p class="kicker">Your Next Step</p>' +
+          '<h3>Close the gaps you just saw — with the Readiness Kit</h3>' +
+          '<p class="personal">' + personal + "</p>" +
+          "<ul>" +
+            "<li>11 plain-language chapters matched to the seven areas you were just scored on</li>" +
+            "<li>The full worksheets behind your score — re-check yourself as your record grows</li>" +
+            "<li>123-page printable PDF, plus the symptom diary, doctor guide, and SSA phone card</li>" +
+          "</ul>" +
+          '<a class="btn-kit" href="' + esc(kit.url) + '" target="_blank" rel="noopener">Get the Readiness Kit — ' + esc(kit.price || "$47") + "</a>" +
+          '<p class="sub">One-time purchase · Instant download · Yours to keep and print</p>' +
+          '<p class="sub">An educational guide — not legal advice. Applying for disability is always free at ssa.gov.</p>' +
+        "</div>" +
+      "</div></div>";
+  }
+
   function finish(r, emailNote) {
     var tier = S.bank.tiers.filter(function (t) { return t.id === r.tier.id; })[0];
     store(LAST_KEY, { total: r.total, tierId: tier.id, tierName: tier.name, at: new Date().toISOString() });
@@ -342,6 +391,8 @@
       html += '<div class="section-bar"><div class="label"><span>' + esc(s.title) + '</span><span class="pts">' + s.points + " / " + s.maxPoints + '</span></div>' +
               '<div class="track"><div class="fill" style="width:' + pct + '%"></div></div></div>';
     });
+
+    html += kitPromoHtml(r);
 
     r.flags.forEach(function (fid) {
       var f = S.bank.flags[fid];

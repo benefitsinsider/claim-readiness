@@ -16,6 +16,11 @@
     "representative_fee_cap": 9200,
     "average_ssdi_benefit_monthly": 1580
   },
+  "kit": {
+    "url": "",
+    "price": "$47",
+    "note": "Set url to the live checkout link to switch the Kit promo on (results page). Email promo uses the KIT_URL env var in Netlify."
+  },
   "displayStrings": {
     "sga_nonblind": "$1,690/month",
     "sga_blind": "$2,830/month",

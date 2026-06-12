@@ -97,6 +97,58 @@ function rulesBlock(gatesClosed) {
       Your results page explains each one, what it means, and how it can change.</p>`;
 }
 
+const KIT_CHAPTERS = {
+  program: "Chapter 1", work: "Chapter 2", severity: "Chapter 3",
+  medical: "Chapter 4", function: "Chapter 5", vocational: "Chapters 6–7", risk: "Chapter 8"
+};
+const KIT_FIXABLE = ["program", "work", "severity", "medical", "function", "risk"];
+
+function kitBlock(data) {
+  const url = process.env.KIT_URL;
+  if (!url) return "";
+  const price = process.env.KIT_PRICE || "$47";
+
+  const weak = [];
+  Object.keys(data.sections || {}).forEach(id => {
+    const m = /^(\d+)\s*\/\s*(\d+)$/.exec(String(data.sections[id] || ""));
+    if (!m || KIT_FIXABLE.indexOf(id) === -1) return;
+    const pts = parseInt(m[1], 10), max = parseInt(m[2], 10);
+    if (pts < max) weak.push({ id, pts, max, ratio: pts / max, title: (SECTION_TITLES[id] || id).replace(/^Your /, "") });
+  });
+  weak.sort((a, b) => a.ratio - b.ratio);
+  const w = weak.slice(0, 2);
+  let personal;
+  if (w.length === 2) {
+    personal = `Your lowest areas were <strong>${w[0].title} (${w[0].pts}/${w[0].max})</strong> and <strong>${w[1].title} (${w[1].pts}/${w[1].max})</strong> — ${KIT_CHAPTERS[w[0].id]} and ${KIT_CHAPTERS[w[1].id]} of the Kit walk you through fixing exactly those, most of it in 30–90 days.`;
+  } else if (w.length === 1) {
+    personal = `Your lowest area was <strong>${w[0].title} (${w[0].pts}/${w[0].max})</strong> — ${KIT_CHAPTERS[w[0].id]} of the Kit walks you through fixing exactly that.`;
+  } else {
+    personal = "Your preparation scored well — the Kit is how people keep it organized and consistent through filing and beyond.";
+  }
+
+  return `
+  <tr><td style="background:#ffffff;padding:8px 28px 20px;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #ECE6D8;border-top:5px solid #D4A24C;border-radius:4px;">
+      <tr><td style="padding:20px 22px;">
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:bold;letter-spacing:2px;color:#D4A24C;">YOUR NEXT STEP</div>
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:21px;font-weight:bold;color:#1A2B4A;margin:6px 0 10px;">Close the gaps in this report — with the Readiness Kit</div>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:15.5px;line-height:1.6;color:#2C2C2C;margin:0 0 12px;">${personal}</p>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.7;color:#2C2C2C;margin:0 0 16px;">
+          &#10003;&nbsp;11 plain-language chapters matched to the seven areas you were scored on<br>
+          &#10003;&nbsp;The full worksheets behind your score &mdash; re-check yourself as your record grows<br>
+          &#10003;&nbsp;123-page printable PDF + symptom diary, doctor guide, and SSA phone card</p>
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%"><tr>
+          <td style="background:#D4A24C;border-radius:6px;text-align:center;">
+            <a href="${escapeHtml(url)}" style="display:block;padding:15px 22px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;color:#1A2B4A;text-decoration:none;">Get the Readiness Kit &mdash; ${escapeHtml(price)}</a>
+          </td>
+        </tr></table>
+        <p style="font-family:Arial,Helvetica,sans-serif;font-size:12.5px;line-height:1.6;color:#6B7280;margin:10px 0 0;text-align:center;">
+          One-time purchase &middot; Instant download &middot; An educational guide, not legal advice.<br>Applying for disability is always free at ssa.gov.</p>
+      </td></tr>
+    </table>
+  </td></tr>`;
+}
+
 function buildReportEmail(data) {
   const tier = TIERS[data.tierId] || TIERS["major-gaps"];
   const firstName = escapeHtml((data.name || "").split(" ")[0] || "there");
@@ -152,6 +204,8 @@ function buildReportEmail(data) {
       <tr><td style="padding:10px 0 12px;"><strong style="color:#1A2B4A;">4. Bring it to any conversation about your claim</strong> — SSA, an attorney, or a representative. It saves them time and saves you repeating yourself.</td></tr>
     </table>
   </td></tr>
+
+  ${kitBlock(data)}
 
   <tr><td style="background:#1A2B4A;padding:22px 28px;">
     <p style="font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:16px;line-height:1.6;color:#FFF8EB;margin:0 0 10px;">
