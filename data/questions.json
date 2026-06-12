@@ -72,14 +72,14 @@
       "name": "The 12-Month Rule",
       "question": "Is your condition and the related work limitation expected to last at least 12 continuous months, or result in death?",
       "closedWhen": { "all": [ { "q": "q3-duration", "is": ["under-12"] } ] },
-      "capTier": "building",
-      "closedMessage": "A condition clearly expected to resolve in under 12 months does not meet SSA's duration rule, even at its worst point. Your readiness tier is capped at Building Your Case.",
+      "capTier": "major-gaps",
+      "closedMessage": "A condition clearly expected to resolve in under 12 months does not meet SSA's duration rule, even at its worst point. This is a threshold rule — more documentation cannot fix it — so your readiness tier is capped at Major Gaps to Address while it applies.",
       "reopenMessage": "If the condition does not resolve as expected and the work limitation continues, the duration rule may be satisfied. You do not have to wait the full 12 months to file — only the expected duration needs to be at least 12 months."
     },
     {
       "id": "gate-medical",
       "name": "Medical Evidence",
-      "question": "Do you have any objective medical evidence from an acceptable medical source?",
+      "question": "Do you have objective medical evidence from an acceptable medical source — medical signs, exam findings, laboratory findings, or imaging — showing a medically determinable impairment?",
       "closedWhen": { "all": [ { "q": "q4-objective", "is": ["none"] }, { "q": "q4-ams-diagnosis", "is": ["no"] } ] },
       "capTier": "major-gaps",
       "closedMessage": "SSA decides claims on medical evidence. With no objective medical evidence from an acceptable medical source, your readiness tier is capped at Major Gaps to Address.",
@@ -163,7 +163,7 @@
       "section": "work",
       "showIf": { "q": "q2-working", "is": ["yes"] },
       "text": "Are you earning more than {{sga_nonblind}} gross per month? ({{sga_blind}} if you are statutorily blind.)",
-      "helpText": "This is SSA's Substantial Gainful Activity (SGA) threshold — the earnings level that generally leads to denial at Step 1 of the evaluation, regardless of medical condition. 'Gross' means before taxes.",
+      "helpText": "This is SSA's Substantial Gainful Activity (SGA) threshold — the earnings level that generally stops a claim at the first step of review, regardless of medical condition. 'Gross' means before taxes. Note: the higher blind amount applies to Social Security disability benefits; SSA says SGA for blind individuals does not apply to SSI.",
       "type": "single",
       "options": [
         { "value": "below", "label": "No, I earn less than that", "points": 13 },
@@ -227,7 +227,7 @@
       "id": "q3-severe-diagnosis",
       "section": "severity",
       "text": "Has a doctor diagnosed you with a condition such as ALS, an aggressive or advanced cancer, end-stage renal disease, or early-onset Alzheimer's?",
-      "helpText": "SSA's Compassionate Allowances program fast-tracks about 300 conditions so severe that the diagnosis itself meets the disability standard. These claims are typically decided in weeks rather than months. The full list is at ssa.gov/compassionateallowances.",
+      "helpText": "SSA's Compassionate Allowances program flags about 300 serious conditions for expedited review, because they generally meet SSA's disability standard. CAL speeds the review — it is not a substitute for filing, evidence, or the non-medical rules. The full list is at ssa.gov/compassionateallowances.",
       "type": "single",
       "options": [
         { "value": "yes", "label": "Yes", "points": 0, "flags": ["cal-check"] },
@@ -396,8 +396,8 @@
     {
       "id": "q6-past-work",
       "section": "vocational",
-      "text": "Could you still do any job you've held in the last 15 years, as you actually performed it?",
-      "helpText": "This is Step 4 of SSA's evaluation. Think about what the job actually required day to day — not the job title.",
+      "text": "Could you still do any job you've held in the last 5 years, as you actually performed it?",
+      "helpText": "This is Step 4 of SSA's evaluation. Under current rules (since June 2024), SSA generally looks only at work from the last 5 years — and skips jobs you started and stopped in under 30 days. Think about what the job actually required day to day — not the job title.",
       "type": "single",
       "options": [
         { "value": "no", "label": "No, I couldn't do any of them now", "points": 4 },
@@ -421,7 +421,7 @@
       "id": "q6-transferable",
       "section": "vocational",
       "text": "Do you have skills from past work that would transfer to a desk job or lighter work?",
-      "helpText": "If your skills transfer to lighter work you can still do, SSA is more likely to find other work you could adjust to. Physical, hands-on work histories often have fewer transferable skills — which, under the grids, can actually support approval.",
+      "helpText": "If your skills transfer to lighter work you can still do, SSA is more likely to find other work you could adjust to. Physical, hands-on work histories often have fewer transferable skills — which often means the rules weigh in your favor at this step.",
       "type": "single",
       "options": [
         { "value": "no", "label": "No — my work has been mostly physical or hands-on", "points": 3 },
@@ -432,7 +432,7 @@
     {
       "id": "q6-history-documented",
       "section": "vocational",
-      "text": "Could you list every job from the last 15 years — titles, dates, and what you actually did?",
+      "text": "Could you list every job from the last 5 years — titles, dates, and what you actually did?",
       "helpText": "SSA's work history report asks for exactly this. Descriptions of what you actually did matter more than titles — the same title can mean very different physical demands.",
       "type": "single",
       "options": [
@@ -462,7 +462,7 @@
   "flags": {
     "stage-denied": {
       "title": "You mentioned a denial — watch the appeal clock",
-      "message": "Appeals generally must be filed within 60 days of receiving a denial notice, and most people who are eventually approved were denied at least once first. If your denial is recent, confirming your exact deadline — with SSA or a qualified representative — may matter more than anything else in this report. Many representatives offer free consultations for exactly this situation."
+      "message": "Appeals generally must be filed within 60 days of receiving a denial notice (SSA assumes you received it 5 days after the date on the letter unless you can show otherwise), and most people who are eventually approved were denied at least once first. If your denial is recent, confirming your exact deadline — with SSA or a qualified representative — may matter more than anything else in this report. Many representatives offer free consultations for exactly this situation."
     },
     "stage-applied": {
       "title": "While you wait — keep building the record",
@@ -478,12 +478,12 @@
     },
     "cal-check": {
       "title": "Ask about Compassionate Allowances",
-      "message": "Your diagnosis may be on SSA's Compassionate Allowances list — conditions so severe the diagnosis itself meets the standard, typically decided in weeks rather than months. Check ssa.gov/compassionateallowances, and if you file, say: \"Please note in my file that I'm requesting a Compassionate Allowances review.\""
+      "message": "Your diagnosis may be on SSA's Compassionate Allowances list — serious conditions SSA flags for expedited review because they generally meet the disability standard. CAL speeds review; the claim still needs evidence and the non-medical rules still apply. Check ssa.gov/compassionateallowances, and if you file, say: \"Please note in my file that I'm requesting a Compassionate Allowances review.\""
     },
     "concurrent-benefits": {
       "derivedWhen": { "all": [ { "q": "q1-ssdi-insured", "is": ["yes"] }, { "q": "q1-ssi-limits", "is": ["yes"] } ] },
       "title": "You may be able to apply for both programs",
-      "message": "Both program paths appear open. If your SSDI benefit would be low and you meet SSI income and resource rules, SSA can determine whether you qualify for concurrent benefits — which generally extends what you receive and adds Medicaid alongside Medicare."
+      "message": "Both program paths appear open. If your SSDI benefit would be low and you meet SSI income and resource rules, SSA can determine whether you qualify for concurrent benefits — which can extend what you receive — and SSI often links to Medicaid health coverage, depending on your state's rules."
     }
   }
 }

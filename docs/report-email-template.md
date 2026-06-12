@@ -56,7 +56,7 @@ nothing on paper for SSA to evaluate.
 of conditions severe enough to be presumptively disabling. Meet or equal one,
 and the claim is generally approved at this step.
 
-**Step 4 — Can you do any job you held in the last 15 years?** SSA assesses
+**Step 4 — Can you do any job you held in the last 5 years?** Under rules current since June 2024, SSA generally considers only work from the last 5 years (skipping jobs held under 30 days). SSA assesses
 what you can still do despite your limitations (your "residual functional
 capacity") and compares it to your past work — as you actually performed it,
 not the job title.

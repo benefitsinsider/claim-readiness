@@ -60,7 +60,7 @@ check("SGA-review status", r.gates.filter(function (g) { return g.id === "gate-s
 // 4. Duration under 12 months: capped at building (not major-gaps).
 r = scoreQuiz(bank, withChanges(BEST, { "q3-duration": "under-12" }));
 check("duration-closed total = 94", r.total === 94, "got " + r.total);
-check("duration caps at building", r.tier.id === "building", r.tier.id);
+check("duration caps at major-gaps", r.tier.id === "major-gaps", r.tier.id);
 
 // 5. No program path: gate closed, capped major-gaps; section scores only the record-check.
 r = scoreQuiz(bank, withChanges(BEST, { "q1-ssdi-insured": "no", "q1-ssi-limits": "no" }));
