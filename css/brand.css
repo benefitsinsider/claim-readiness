@@ -258,6 +258,26 @@ h2 { font-size: 24px; }
   text-align: center; text-decoration: none; cursor: pointer;
 }
 .kit-promo .btn-kit:hover { background: var(--gold-light); }
+.kit-guarantee {
+  display: flex; align-items: center; gap: 14px;
+  margin: 14px 0 4px; padding: 12px 14px;
+  background: var(--callout-bg); border: 1px solid var(--callout-border);
+  border-radius: 8px;
+}
+.kit-guarantee .seal {
+  flex-shrink: 0; width: 66px; height: 66px; border-radius: 50%;
+  background: var(--navy); border: 2px solid var(--gold);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; line-height: 1.1;
+}
+.kit-guarantee .seal strong {
+  font-family: 'Lora', Georgia, serif; font-weight: 700; font-size: 18px; color: var(--gold);
+}
+.kit-guarantee .seal span {
+  font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 7.5px;
+  letter-spacing: 0.08em; color: var(--cream); margin-top: 2px;
+}
+.kit-guarantee .g-text { font-size: 15px; line-height: 1.5; color: var(--charcoal); }
 .kit-promo .sub { font-size: 13.5px; color: var(--gray-text); text-align: center; margin: 8px 0 0; }
 @media (max-width: 560px) {
   .kit-promo .inner { flex-direction: column; align-items: center; text-align: left; }

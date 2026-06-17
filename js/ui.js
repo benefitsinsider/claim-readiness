@@ -344,6 +344,10 @@
             "<li>126-page printable PDF, plus the symptom diary, doctor guide, and SSA phone card</li>" +
           "</ul>" +
           '<a class="btn-kit" href="' + esc(kit.url) + '" target="_blank" rel="noopener">Get the Readiness Kit — ' + esc(kit.price || "$47") + "</a>" +
+          '<div class="kit-guarantee">' +
+            '<span class="seal"><strong>7-DAY</strong><span>NO-QUESTIONS REFUND</span></span>' +
+            '<span class="g-text">Work the chapters. If you\'re not more prepared, email us within 7 days for a full refund — no questions asked.</span>' +
+          "</div>" +
           '<p class="sub">One-time purchase · Instant download · Yours to keep and print</p>' +
           '<p class="sub">An educational guide — not legal advice. Applying for disability is always free at ssa.gov.</p>' +
         "</div>" +
