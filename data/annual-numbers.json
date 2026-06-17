@@ -17,9 +17,9 @@
     "average_ssdi_benefit_monthly": 1630
   },
   "kit": {
-    "url": "",
+    "url": "https://seniorfirststore.com/products/disability-claim-readiness-kit",
     "price": "$47",
-    "note": "Set url to the live checkout link to switch the Kit promo on (results page). Email promo uses the KIT_URL env var in Netlify."
+    "note": "url drives BOTH the results-page card and the report email (function reads this file). Clear url to turn the promo off everywhere."
   },
   "displayStrings": {
     "sga_nonblind": "$1,690/month",

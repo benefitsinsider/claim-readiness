@@ -103,10 +103,15 @@ const KIT_CHAPTERS = {
 };
 const KIT_FIXABLE = ["program", "work", "severity", "medical", "function", "risk"];
 
+let KIT_CFG = {};
+try { KIT_CFG = (require("../../data/annual-numbers.json").kit) || {}; } catch (e) { KIT_CFG = {}; }
+
 function kitBlock(data) {
-  const url = process.env.KIT_URL;
+  // URL/price come from data/annual-numbers.json (single source of truth, shared
+  // with the results page). Env vars still override if ever set.
+  const url = process.env.KIT_URL || KIT_CFG.url;
   if (!url) return "";
-  const price = process.env.KIT_PRICE || "$47";
+  const price = process.env.KIT_PRICE || KIT_CFG.price || "$47";
 
   const weak = [];
   Object.keys(data.sections || {}).forEach(id => {
