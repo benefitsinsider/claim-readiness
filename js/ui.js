@@ -13,6 +13,7 @@
   var STORE_KEY = "dcr-v1";          // in-progress quiz (answers, cursor, consent)
   var PROFILE_KEY = "dcr-profile-v1"; // name/email/phone after first capture
   var LAST_KEY = "dcr-last-v1";       // last completed result (for re-check card)
+  var HIST_KEY = "dcr-hist-v1";       // on-device score history (private, never transmitted)
   var SUBSCRIBE_URL = "/.netlify/functions/subscribe";
   var FORM_VERSION = "capture-v1";
   var HEALTH_SECTIONS = ["severity", "medical", "function"];
@@ -351,7 +352,14 @@
 
   function finish(r, emailNote) {
     var tier = S.bank.tiers.filter(function (t) { return t.id === r.tier.id; })[0];
-    store(LAST_KEY, { total: r.total, tierId: tier.id, tierName: tier.name, at: new Date().toISOString() });
+    var nowEntry = { total: r.total, tierId: tier.id, tierName: tier.name, at: new Date().toISOString() };
+    // Prior check (before this one) for the progression badge, then append to on-device history.
+    var hist = fetchStore(HIST_KEY) || [];
+    var prior = hist.length ? hist[hist.length - 1] : null;
+    hist.push(nowEntry);
+    if (hist.length > 8) hist = hist.slice(hist.length - 8); // keep last 8, on device only
+    store(HIST_KEY, hist);
+    store(LAST_KEY, nowEntry);
     // A finished run is not resumable — next visit starts a fresh re-check.
     try { localStorage.removeItem(STORE_KEY); } catch (e) {}
     var html = "";
@@ -359,7 +367,17 @@
     html += '<div class="score-hero">' +
       '<div class="eyebrow">Your Claim Readiness Score</div>' +
       '<div class="score-num">' + r.total + "</div>" +
-      '<div class="score-of">OUT OF 100</div></div>';
+      '<div class="score-of">OUT OF 100</div>';
+    if (prior) {
+      var delta = r.total - prior.total;
+      var priorDate = new Date(prior.at).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+      var arrow = delta > 0 ? "&#9650; +" + delta : delta < 0 ? "&#9660; " + delta : "&middot; no change";
+      var col = delta > 0 ? "var(--green, #2E7D5B)" : delta < 0 ? "var(--amber, #C58B3A)" : "var(--gray-text, #6B7280)";
+      html += '<div class="score-delta" style="margin-top:10px;font-size:15.5px;color:' + col + ';font-weight:700;">' +
+        arrow + ' since your ' + esc(priorDate) + ' check (was ' + prior.total + ')</div>' +
+        (delta > 0 ? '<div class="muted" style="font-size:14px;margin-top:4px;">That\'s the kind of movement that comes from building the record.</div>' : '');
+    }
+    html += "</div>";
 
     if (emailNote) {
       html += '<div class="flag-card no-print" id="email-note"><div class="flag-title">★ Your report is on the way</div><p style="margin:0">' + emailNote + "</p></div>";
@@ -427,13 +445,24 @@
     if (existing) existing.remove();
     var last = fetchStore(LAST_KEY);
     if (!last) return;
+    var hist = fetchStore(HIST_KEY) || [];
     var when = new Date(last.at);
     var dateStr = when.toLocaleDateString(undefined, { month: "long", day: "numeric" });
     var card = document.createElement("div");
     card.className = "last-score-card";
     card.id = "last-score-card";
-    card.innerHTML = '<div class="eyebrow" style="margin:0 0 4px;">Your last score · ' + esc(dateStr) + "</div>" +
+    var trend = "";
+    if (hist.length >= 2) {
+      var first = hist[0], gain = last.total - first.total;
+      if (gain > 0) {
+        trend = '<p style="margin:8px 0 0;font-size:15.5px;color:var(--green,#2E7D5B);font-weight:700;">' +
+          '&#9650; Up ' + gain + ' points since your first check. Keep going.</p>';
+      }
+    }
+    card.innerHTML = '<div class="eyebrow" style="margin:0 0 4px;">Your last score · ' + esc(dateStr) +
+      (hist.length >= 2 ? ' · check ' + hist.length : '') + "</div>" +
       '<span class="num">' + last.total + '</span> <span class="muted">/ 100 · ' + esc(last.tierName) + "</span>" +
+      trend +
       '<p style="margin:8px 0 0;font-size:15.5px;">Readiness changes as your record grows. Re-check to see what\'s moved.</p>';
     var hero = document.querySelector(".hero");
     hero.parentNode.insertBefore(card, hero.nextSibling);
